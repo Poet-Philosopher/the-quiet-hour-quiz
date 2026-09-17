@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Quiet Hour — Which Classic Author Are You?</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg-deep: #14211b; --bg-panel: #1c2b23; --paper: #ede3c8; --paper-edge: #ddd0ac;
+    --ink: #26221a; --ink-soft: #4a4436; --brass: #b8873f; --brass-bright: #d0a25e;
+    --sage: #7c8c7e; --ember: #7c3f2d; --rule: rgba(38, 34, 26, 0.18); --shadow: rgba(8, 14, 10, 0.45);
+  }
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+  :root[data-theme="light"] {
+    --bg-deep: #e7e0cd; --bg-panel: #f1ead6; --paper: #fbf6e8; --paper-edge: #e3d7b6;
+    --ink: #2a2419; --ink-soft: #574f3c; --brass: #9c7133; --brass-bright: #b8873f;
+    --sage: #6b7a6d; --ember: #7c3f2d; --rule: rgba(42, 36, 25, 0.16); --shadow: rgba(60, 50, 30, 0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg-deep: #e7e0cd; --bg-panel: #f1ead6; --paper: #fbf6e8; --paper-edge: #e3d7b6;
+      --ink: #2a2419; --ink-soft: #574f3c; --brass: #9c7133; --brass-bright: #b8873f;
+      --sage: #6b7a6d; --ember: #7c3f2d; --rule: rgba(42, 36, 25, 0.16); --shadow: rgba(60, 50, 30, 0.18);
+      color-scheme: light;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    background: radial-gradient(ellipse 900px 600px at 50% -10%, rgba(184,135,63,0.16), transparent 60%), var(--bg-deep);
+    color: var(--paper); font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    min-height: 100vh; display: flex; align-items: flex-start; justify-content: center;
+    padding: 48px 20px 80px; line-height: 1.6;
+  }
+  .room { width: 100%; max-width: 640px; }
+  .masthead { text-align: center; margin-bottom: 34px; }
+  .masthead .glyph { font-size: 26px; display: block; margin-bottom: 14px; opacity: 0.85; }
+  .masthead h1 {
+    font-family: 'Fraunces', serif; font-optical-sizing: auto; font-weight: 500; font-style: italic;
+    font-size: clamp(30px, 5.4vw, 46px); line-height: 1.12; margin: 0 0 16px; color: var(--paper); letter-spacing: -0.01em;
+  }
+  .masthead p { max-width: 48ch; margin: 0 auto 30px; color: var(--sage); font-size: 16.5px; line-height: 1.75; }
+  .begin-btn {
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 17px;
+    background: var(--brass); color: #1c1305; border: none; padding: 13px 34px; border-radius: 999px;
+    cursor: pointer; transition: background 150ms ease, transform 150ms ease;
+  }
+  .begin-btn:hover, .begin-btn:focus-visible { background: var(--brass-bright); transform: translateY(-1px); }
+
+  .page {
+    background: var(--paper); color: var(--ink); border-radius: 3px;
+    box-shadow: 0 30px 60px -20px var(--shadow), 0 2px 0 var(--paper-edge);
+    padding: 44px 40px 36px; position: relative; overflow: hidden;
+  }
+  .page::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+    background: linear-gradient(180deg, var(--brass), var(--ember)); opacity: 0.85;
+  }
+  @media (max-width: 520px) { .page { padding: 34px 22px 28px; } }
+
+  .tally { height: 3px; background: var(--rule); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
+  .tally-fill { height: 100%; width: 12.5%; background: var(--brass); transition: width 420ms ease; }
+
+  .q-count { font-family: 'Fraunces', serif; font-style: italic; color: var(--ink-soft); font-size: 14px; margin: 0 0 6px; opacity: 0.75; }
+  .q-prompt { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(21px, 3.4vw, 25px); line-height: 1.35; margin: 0 0 28px; max-width: 36ch; }
+
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .options li { border-top: 1px solid var(--rule); }
+  .options li:last-child { border-bottom: 1px solid var(--rule); }
+  .opt-btn {
+    display: flex; align-items: baseline; gap: 16px; width: 100%; text-align: left; background: none; border: none;
+    font-family: 'Source Serif 4', Georgia, serif; font-size: 16.5px; line-height: 1.55; color: var(--ink);
+    padding: 16px 6px; cursor: pointer; transition: color 150ms ease, padding-left 150ms ease;
+  }
+  .opt-btn:hover, .opt-btn:focus-visible { color: var(--ember); padding-left: 12px; }
+  .opt-btn:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  .opt-letter { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; color: var(--brass); flex: 0 0 auto; width: 1.1em; }
+  .foot-note { margin-top: 30px; font-size: 13px; color: var(--ink-soft); opacity: 0.6; text-align: right; }
+
+  .portrait {
+    width: 132px; height: 132px; margin: 0 auto 20px; border-radius: 50%;
+    border: 2px solid var(--brass); background: var(--paper-edge);
+    display: flex; align-items: center; justify-content: center; padding: 8px;
+    box-shadow: 0 6px 16px -6px var(--shadow), inset 0 0 0 1px var(--rule);
+  }
+  .portrait svg { width: 100%; height: 100%; }
+  .portrait svg .ink { fill: var(--ink); }
+  .portrait svg .paper { fill: var(--paper-edge); }
+
+  .result-head { text-align: center; margin-bottom: 6px; }
+  .result-eyebrow { font-family: 'Fraunces', serif; font-style: italic; color: var(--ink-soft); font-size: 15px; margin: 0 0 6px; }
+  .result-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(28px, 6vw, 40px); margin: 0 0 26px; text-align: center; color: var(--ember); }
+  .result-section { margin-bottom: 26px; }
+  .result-section h3 {
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 17px; color: var(--ink-soft);
+    margin: 0 0 8px; border-bottom: 1px solid var(--rule); padding-bottom: 8px;
+  }
+  .result-section p { margin: 0; font-size: 16px; }
+  blockquote.result-quote {
+    margin: 30px 0 8px; padding: 20px 22px; border-left: 3px solid var(--brass); background: rgba(184,135,63,0.08);
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; line-height: 1.5; color: var(--ink);
+  }
+  blockquote.result-quote cite { display: block; margin-top: 10px; font-family: 'Source Serif 4', serif; font-style: normal; font-size: 14px; color: var(--ink-soft); }
+  .again-row { display: flex; justify-content: center; margin-top: 32px; }
+  .again-btn {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; background: none; border: 1px solid var(--rule);
+    color: var(--ink-soft); padding: 10px 22px; border-radius: 999px; cursor: pointer;
+    transition: border-color 150ms ease, color 150ms ease;
+  }
+  .again-btn:hover, .again-btn:focus-visible { border-color: var(--brass); color: var(--ember); }
+
+  .hidden { display: none !important; }
+  .fade-in { animation: fadeIn 380ms ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in { animation: none; }
+    .opt-btn, .tally-fill, .again-btn, .begin-btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="room">
+
+  <div id="startView">
+    <div class="masthead">
+      <span class="glyph">🕯️</span>
+      <h1>The Quiet Hour</h1>
+      <p>Somewhere past the noise of the day there is a room with one lamp lit, a chair worn into the shape of someone's thinking, and a shelf of authors who have already asked the questions you are only just getting to. Eight small doors, each one weighing what you say against eight very different minds. Answer honestly — not as you wish to be read, but as you actually are when no one is watching.</p>
+      <div style="text-align:center;">
+        <button class="begin-btn" id="beginBtn">Begin</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page hidden" id="pageWrap">
+    <div id="quizView">
+      <div class="tally"><div class="tally-fill" id="tallyFill"></div></div>
+      <p class="q-count" id="qCount">Question 1 of 8</p>
+      <h2 class="q-prompt" id="qPrompt"></h2>
+      <ul class="options" id="qOptions"></ul>
+      <p class="foot-note">choose the door that feels most like a Tuesday, not a costume</p>
+    </div>
+
+    <div id="resultView" class="hidden">
+      <div class="portrait" id="resultPortrait"></div>
+      <div class="result-head">
+        <p class="result-eyebrow">You are, in the end,</p>
+        <h2 class="result-name" id="resultName"></h2>
+      </div>
+      <div class="result-section">
+        <h3>Why this author found you</h3>
+        <p id="resultWhy"></p>
+      </div>
+      <div class="result-section">
+        <h3>Their style, their philosophy</h3>
+        <p id="resultStyle"></p>
+      </div>
+      <blockquote class="result-quote">
+        <span id="resultQuote"></span>
+        <cite id="resultCite"></cite>
+      </blockquote>
+      <div class="again-row" style="gap: 12px; flex-wrap: wrap;">
+        <button class="again-btn" id="againBtn">read it again, differently</button>
+        <button class="again-btn" id="downloadBtn">save this revelation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Author order fixed for every points array:
+  // [austen, plath, shelley, dostoevsky, wilde, dickinson, camus, poe]
+  var authorKeys = ["austen", "plath", "shelley", "dostoevsky", "wilde", "dickinson", "camus", "poe"];
+
+  var questions = [
+    {
+      prompt: "It is 3 a.m. and you cannot sleep. What is keeping you awake?",
+      options: [
+        { text: "A guilty, half-remembered thing you did years ago that still doesn't sit right.", pts: [0,1,0,3,0,0,0,2] },
+        { text: "A single, aching image you need to write down before it disappears completely.", pts: [0,2,1,0,0,3,0,0] },
+        { text: "A conversation you're already replaying and improving, wittier with every pass.", pts: [2,0,0,0,3,1,0,0] },
+        { text: "The specific shape of your own dread, and whether it means anything at all.", pts: [0,0,1,0,0,0,3,2] }
+      ]
+    },
+    {
+      prompt: "Your ideal morning begins…",
+      options: [
+        { text: "without an alarm, in quiet defiance of anyone who thinks life needs scheduling to be worth living.", pts: [1,0,0,0,1,0,3,0] },
+        { text: "at a very particular hour before the house wakes, when the real thoughts finally arrive.", pts: [0,2,0,0,0,3,0,0] },
+        { text: "over tea and correspondence, quietly cataloguing who said what to whom.", pts: [3,0,0,0,2,0,0,0] },
+        { text: "already mid-thought, having slept badly, wrestling with something that arrived uninvited in the dark.", pts: [0,1,2,2,0,0,0,2] }
+      ]
+    },
+    {
+      prompt: "Which room would you choose to write in?",
+      options: [
+        { text: "a sunlit terrace above a sea that owes you nothing and offers nothing back.", pts: [0,0,0,0,1,0,3,0] },
+        { text: "a plain room, good light, a locked door — total privacy for the work.", pts: [0,3,0,0,0,2,0,0] },
+        { text: "a candlelit room full of half-finished, faintly forbidden experiments.", pts: [0,0,3,1,0,0,0,2] },
+        { text: "a drawing room of mirrors and velvet, full of people worth being overheard by.", pts: [2,0,0,0,3,0,0,0] }
+      ]
+    },
+    {
+      prompt: "At a gathering, you find yourself most drawn to…",
+      options: [
+        { text: "the friend arguing that nothing matters, said so warmly it sounds like kindness.", pts: [0,0,0,0,1,0,3,0] },
+        { text: "the one conversation that turns uncomfortably, unexpectedly honest.", pts: [0,2,0,3,0,0,0,0] },
+        { text: "tracking, silently, exactly who is angling to marry whom, and for how much.", pts: [3,0,0,0,1,0,0,0] },
+        { text: "the guest who mentions something faintly disturbing, and you can't stop thinking about it.", pts: [0,0,2,0,0,1,0,3] }
+      ]
+    },
+    {
+      prompt: "When something is taken from you unfairly, you…",
+      options: [
+        { text: "accept it as the cost of an indifferent universe, and keep walking — which is its own rebellion.", pts: [0,0,0,0,0,1,3,0] },
+        { text: "turn it into the most precise, unflinching sentence you have ever written about anything.", pts: [0,3,0,1,0,0,0,0] },
+        { text: "say something perfectly polite about it that everyone will later realize was devastating.", pts: [3,0,0,0,2,0,0,0] },
+        { text: "can't set it down; it becomes the obsession that reshapes everything you make afterward.", pts: [0,0,2,2,0,0,0,2] }
+      ]
+    },
+    {
+      prompt: "The page has been blank for a week. Your instinct is to…",
+      options: [
+        { text: "stop pretending it needs to mean something, and write one true, small sentence about trying anyway.", pts: [0,0,0,0,0,1,3,0] },
+        { text: "sit with the blankness until one unbearably specific image finally breaks it open.", pts: [0,3,1,0,0,0,0,0] },
+        { text: "write a very sharp scene about someone else's failure to write anything interesting.", pts: [2,0,0,0,3,0,0,0] },
+        { text: "let the obsession choose the subject; it always does, whether you like it or not.", pts: [0,0,0,2,0,0,0,3] }
+      ]
+    },
+    {
+      prompt: "If you had to choose only one, for the rest of your life, it would be…",
+      options: [
+        { text: "long solitary walks, occasionally interrupted by a stranger with an interesting opinion.", pts: [0,0,0,0,0,2,2,0] },
+        { text: "one trusted reader allowed to see the early, unfinished, embarrassing drafts.", pts: [1,3,0,0,0,0,0,0] },
+        { text: "a small, sharp-tongued circle you can quietly outmaneuver at every dinner.", pts: [2,0,0,0,3,0,0,0] },
+        { text: "one person who truly understood you, met during your worst season, who never quite left.", pts: [0,0,2,3,0,0,0,1] }
+      ]
+    },
+    {
+      prompt: "The world outside is loud — arguments, notifications, everyone certain of everything. You…",
+      options: [
+        { text: "refuse to raise your voice to match it; certainty was never the interesting part of being alive.", pts: [0,0,0,0,1,0,3,0] },
+        { text: "go quiet and precise, because the loudest feelings deserve the most exact language, not the most volume.", pts: [0,3,0,0,0,2,0,0] },
+        { text: "let it entertain you; a room this certain of itself rarely disappoints.", pts: [2,0,0,0,3,0,0,0] },
+        { text: "find it unbearable, and retreat somewhere dim where the silence has its own low, persistent hum.", pts: [0,0,2,1,0,0,0,3] }
+      ]
+    }
+  ];
+
+  var authors = {
+    austen: {
+      name: "Jane Austen",
+      why: "You've noticed that most drama is really just economics and vanity wearing very good manners, and you find the whole performance quietly hilarious. You're the one saying almost nothing pointed and somehow being the most dangerous person in the room. Your affection for people doesn't stop you from seeing them, with total clarity, exactly as they are.",
+      style: "Austen wrote in precise, ironic prose that lets a character reveal their own foolishness in their own words, while she says almost nothing directly. Beneath the comedy of manners is a sharp, unsentimental study of money, marriage, and social power — she is far less gentle than her reputation suggests.",
+      quote: "I do not want people to be very agreeable, as it saves me the trouble of liking them.",
+      cite: "— Jane Austen"
+    },
+    plath: {
+      name: "Sylvia Plath",
+      why: "You feel things at a pitch most people spend their whole lives avoiding, and you've stopped apologizing for it. Your instinct isn't to soften the sharp thing but to find the one image precise enough to hold it. You'd rather be exact than merely comforting, even when the subject under examination is yourself.",
+      style: "Plath wrote in taut, image-driven verse and unflinching prose, turning ordinary and bodily detail into something charged, almost dangerous to touch. Her confessional mode doesn't perform feeling for sympathy — it dissects it with a clinician's precision, refusing to look away from what it finds.",
+      quote: "Perhaps when we find ourselves wanting everything, it is because we are dangerously near to wanting nothing.",
+      cite: "— Sylvia Plath, The Bell Jar"
+    },
+    shelley: {
+      name: "Mary Shelley",
+      why: "You're drawn to the exact point where ambition curdles into consequence — the experiment that succeeds too well, the love that becomes obligation, the creation that outgrows its maker. You don't flinch from monstrousness; you want to understand what made it, and whether it deserves any tenderness at all. Grief, for you, tends to arrive dressed as a question about what we owe the things we bring into the world.",
+      style: "Shelley wrote Gothic fiction with a philosophical spine, using the sublime and the grotesque to interrogate ambition, isolation, and moral responsibility. Her prose builds dread patiently, through landscape and consequence rather than sudden shock, so the horror always feels earned — and always feels like it's actually about us.",
+      quote: "Nothing is so painful to the human mind as a great and sudden change.",
+      cite: "— Mary Shelley, Frankenstein"
+    },
+    dostoevsky: {
+      name: "Fyodor Dostoevsky",
+      why: "You don't trust a calm surface, because you know what tends to be underneath it. You're drawn to the 3 a.m. version of every question — the guilt, the contradiction, the confession nobody asked for — and you'd rather sit in that discomfort honestly than resolve it too quickly. Your compassion is real, but it was earned the hard way, through your own worst nights.",
+      style: "Dostoevsky wrote long, feverish, digressive novels built out of confession, argument, and moral extremity, where characters think out loud until they reveal exactly who they are. His subject was always the same: the human soul under unbearable pressure, and what it chooses to become there.",
+      quote: "The mystery of human existence lies not in just staying alive, but in finding something to live for.",
+      cite: "— Fyodor Dostoevsky, The Brothers Karamazov"
+    },
+    wilde: {
+      name: "Oscar Wilde",
+      why: "You've noticed that most of what people call seriousness is really just anxiety in a good suit, and you can't help pointing that out — elegantly, and usually while smiling. Beneath the wit is real feeling; you just refuse to hand it over without a little style attached. You'd rather be quotable and right than sincere and boring.",
+      style: "Wilde's prose and plays run on the epigram — a reversed cliché, a paradox delivered with total composure — that lands as comedy first and social critique a half-second later. Underneath the sparkle is a genuine tenderness toward beauty and toward outsiders, dressed carefully so it never sounds like begging to be taken seriously.",
+      quote: "We are all in the gutter, but some of us are looking at the stars.",
+      cite: "— Oscar Wilde, Lady Windermere's Fan"
+    },
+    dickinson: {
+      name: "Emily Dickinson",
+      why: "You keep a whole interior weather system that most people never see, and you've made your peace with that. The smallest, strangest things — a bird, a fly, the particular slant of afternoon light — arrive to you already full of meaning, and you'd rather sit with one true feeling for a week than perform ten shallow ones in an evening. Your solitude isn't loneliness; it's the room where you actually get to think.",
+      style: "Dickinson worked in tight, slant-rhymed quatrains that could hold a whole cosmology in a dash and a comma. Her subjects were death, immortality, nature, and the private mind, but her method was radical compression — she trusted the reader to feel the enormity behind a very small, very exact image.",
+      quote: "The soul selects her own society, then shuts the door.",
+      cite: "— Emily Dickinson"
+    },
+    camus: {
+      name: "Albert Camus",
+      why: "You've made peace with a universe that refuses to explain itself, and rather than despair over it, you've found something close to warmth in the refusal. You don't need the world to justify your happiness, and you don't ask suffering to make sense before you're willing to keep going. There's a quiet, sun-warmed defiance in you — not loud rebellion, but the steadier kind that just keeps showing up to the shore.",
+      style: "Camus wrote in short, clean, declarative sentences that carried enormous moral weight without ever raising their voice. His philosophy of the absurd doesn't ask you to find meaning — it asks you to live fully in its absence, with lucidity instead of illusion. The result is a body of work that feels less like an argument and more like a way of standing in the sun.",
+      quote: "In the midst of winter, I found there was, within me, an invincible summer.",
+      cite: "— Albert Camus, Return to Tipasa"
+    },
+    poe: {
+      name: "Edgar Allan Poe",
+      why: "You're drawn, almost against your will, to whatever is beautiful and slightly wrong — the locked room, the recurring thought, the detail you know you shouldn't keep examining. Where other people look away, you lean closer, certain there is a logic in the dark worth understanding. Your gothic streak isn't about shock; it's about staying with dread long enough to find its shape.",
+      style: "Poe built tightly constructed tales and poems around a single obsessive idea, unfolding with almost mathematical control even as the content spirals toward terror or grief. His gothic sensibility treats death and the macabre not as spectacle but as a kind of rigorous, dark psychology — beauty and horror studied at the same unflinching distance.",
+      quote: "I became insane, with long intervals of horrible sanity.",
+      cite: "— Edgar Allan Poe, Eleonora"
+    }
+  };
+
+  var portraits = {
+    austen: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<circle class="ink" cx="63" cy="56" r="14"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '<path class="paper" d="M56,64 C72,54 128,54 144,66 L144,73 C128,62 72,62 56,72 Z"/>' +
+      '<path class="paper" d="M82,150 C89,159 96,162 100,160 C104,162 111,159 118,150 L118,159 C110,168 90,168 82,159 Z"/>' +
+      '</svg>',
+    plath: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse class="ink" cx="92" cy="86" rx="62" ry="56"/>' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '</svg>',
+    shelley: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<ellipse class="ink" cx="55" cy="62" rx="19" ry="15"/>' +
+      '<circle class="ink" cx="47" cy="44" r="11"/>' +
+      '<path class="ink" d="M60,220 C60,180 72,155 84,140 L88,150 L112,150 L116,140 C128,155 140,180 140,220 Z"/>' +
+      '<path class="paper" d="M86,152 C90,178 90,200 86,220 L94,220 C97,198 97,176 94,152 Z"/>' +
+      '<path class="paper" d="M106,152 C110,178 110,200 106,220 L114,220 C117,198 117,176 114,152 Z"/>' +
+      '</svg>',
+    dostoevsky: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M132,70 L152,70 L150,80 L134,80 Z"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<path class="ink" d="M84,108 C82,130 84,150 96,162 C104,168 116,166 124,158 C130,150 132,134 130,116 C128,128 118,138 104,138 C92,138 84,124 84,108 Z"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '</svg>',
+    wilde: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<path class="ink" d="M46,72 C38,92 40,116 54,132 C50,112 52,92 60,76 Z"/>' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '<path class="ink" d="M84,150 L68,180 L88,188 L92,158 Z"/>' +
+      '<path class="paper" d="M92,158 L102,174 L110,158 Z"/>' +
+      '</svg>',
+    dickinson: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<circle class="ink" cx="56" cy="120" r="9"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '<path class="paper" d="M84,148 L84,143 L116,143 L116,148 Z"/>' +
+      '</svg>',
+    camus: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '<path class="ink" d="M80,150 L64,172 L78,182 L84,158 Z"/>' +
+      '<path class="ink" d="M120,150 L136,172 L122,182 L116,158 Z"/>' +
+      '</svg>',
+    poe: '<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle class="ink" cx="100" cy="92" r="46"/>' +
+      '<path class="ink" d="M142,78 C150,82 156,90 158,100 C162,104 168,110 170,118 C163,116 156,113 150,114 C152,122 148,130 140,136 C136,128 136,118 140,110 C136,100 138,88 142,78 Z"/>' +
+      '<path class="ink" d="M66,58 L60,40 L74,52 Z"/>' +
+      '<path class="ink" d="M84,46 L80,26 L94,42 Z"/>' +
+      '<path class="ink" d="M106,42 L104,22 L118,38 Z"/>' +
+      '<path class="ink" d="M126,48 L130,28 L138,46 Z"/>' +
+      '<path class="ink" d="M132,124 C138,129 148,131 156,127 C150,135 138,135 132,129 Z"/>' +
+      '<path class="ink" d="M38,220 C38,178 56,158 82,150 L82,172 L118,172 L118,150 C144,158 162,178 162,220 Z"/>' +
+      '<path class="paper" d="M90,157 L100,164 L90,171 Z"/>' +
+      '<path class="paper" d="M110,157 L100,164 L110,171 Z"/>' +
+      '<circle class="paper" cx="100" cy="164" r="3.5"/>' +
+      '</svg>'
+  };
+
+  var current = 0;
+  var scores = { austen:0, plath:0, shelley:0, dostoevsky:0, wilde:0, dickinson:0, camus:0, poe:0 };
+
+  var qCountEl = document.getElementById("qCount");
+  var qPromptEl = document.getElementById("qPrompt");
+  var qOptionsEl = document.getElementById("qOptions");
+  var tallyFillEl = document.getElementById("tallyFill");
+  var quizView = document.getElementById("quizView");
+  var resultView = document.getElementById("resultView");
+  var startView = document.getElementById("startView");
+  var pageWrap = document.getElementById("pageWrap");
+
+  function renderQuestion() {
+    var q = questions[current];
+    qCountEl.textContent = "Question " + (current + 1) + " of " + questions.length;
+    tallyFillEl.style.width = ((current / questions.length) * 100 + 12.5) + "%";
+    qPromptEl.textContent = q.prompt;
+    qOptionsEl.innerHTML = "";
+
+    var letters = ["A", "B", "C", "D"];
+    q.options.forEach(function (opt, i) {
+      var li = document.createElement("li");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "opt-btn";
+      btn.innerHTML = '<span class="opt-letter">' + letters[i] + "</span><span>" + opt.text + "</span>";
+      btn.addEventListener("click", function () {
+        opt.pts.forEach(function (p, idx) { scores[authorKeys[idx]] += p; });
+        current += 1;
+        if (current < questions.length) {
+          renderQuestion();
+          quizView.classList.remove("fade-in");
+          void qPromptEl.offsetWidth;
+          quizView.classList.add("fade-in");
+        } else {
+          showResult();
+        }
+      });
+      li.appendChild(btn);
+      qOptionsEl.appendChild(li);
+    });
+  }
+
+  function showResult() {
+    var winner = authorKeys[0];
+    authorKeys.forEach(function (key) {
+      if (scores[key] > scores[winner]) winner = key;
+    });
+    var a = authors[winner];
+
+    document.getElementById("resultPortrait").innerHTML = portraits[winner];
+    document.getElementById("resultName").textContent = a.name;
+    document.getElementById("resultWhy").textContent = a.why;
+    document.getElementById("resultStyle").textContent = a.style;
+    document.getElementById("resultQuote").textContent = "\u201C" + a.quote + "\u201D";
+    document.getElementById("resultCite").textContent = a.cite;
+
+    quizView.classList.add("hidden");
+    resultView.classList.remove("hidden");
+    resultView.classList.add("fade-in");
+  }
+
+  document.getElementById("beginBtn").addEventListener("click", function () {
+    startView.classList.add("hidden");
+    pageWrap.classList.remove("hidden");
+    pageWrap.classList.add("fade-in");
+    renderQuestion();
+  });
+
+  document.getElementById("againBtn").addEventListener("click", function () {
+    current = 0;
+    scores = { austen:0, plath:0, shelley:0, dostoevsky:0, wilde:0, dickinson:0, camus:0, poe:0 };
+    resultView.classList.add("hidden");
+    resultView.classList.remove("fade-in");
+    quizView.classList.remove("hidden");
+    renderQuestion();
+  });
+
+  document.getElementById("downloadBtn").addEventListener("click", function () {
+    var btnRow = document.querySelector(".again-row");
+    btnRow.style.display = "none"; // Hide buttons temporarily for the screenshot
+
+    html2canvas(document.getElementById("pageWrap"), {
+      scale: 2, // Doubles the resolution for a crisp image
+      backgroundColor: "#fbf6e8" // Forces the parchment background color
+    }).then(function(canvas) {
+      btnRow.style.display = "flex"; // Bring the buttons back
+      
+      var link = document.createElement("a");
+      link.download = "The-Quiet-Hour-Result.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
